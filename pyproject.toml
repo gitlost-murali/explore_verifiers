@@ -1,0 +1,28 @@
+[project]
+name = "explore-verifiers"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "verifiers[rl]",
+]
+
+[project.scripts]
+explore-verifiers = "explore_verifiers:main"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.extra-build-dependencies]
+flash-attn = ["torch"]
+
+[tool.uv.sources]
+verifiers = { git = "https://github.com/PrimeIntellect-ai/verifiers.git", rev = "main" }
+
+[tool.mypy]
+# Ignore missing type stubs for third-party libraries
+[[tool.mypy.overrides]]
+module = "verifiers.*"
+ignore_missing_imports = true

@@ -1,0 +1,19 @@
+[project]
+name = "agentic-chat"
+description = "Multi turn ReAct agent with calculator tool for GSM8k"
+tags = ["ReAct", "tools", "train", "eval"]
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "verifiers>=0.1.6.post0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.mypy]
+# Ignore missing type stubs for third-party libraries
+[[tool.mypy.overrides]]
+module = "verifiers.*"
+ignore_missing_imports = true
