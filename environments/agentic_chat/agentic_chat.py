@@ -10,9 +10,20 @@ This environment implements a ReAct (Reasoning + Acting) agent pattern where:
 import json
 from typing import Any, Callable
 
+from openai import AsyncOpenAI
 import verifiers as vf
 from verifiers.types import Messages, State # type: ignore
 from openai.types.chat import ChatCompletionMessageToolCall
+from datasets import load_dataset
+from dotenv import load_dotenv
+from pydantic import BaseModel
+
+load_dotenv()
+
+
+class JudgeResponse(BaseModel):
+    reasoning: str
+    score: float
 
 def final_answer(answer: str) -> str:
     """
@@ -151,6 +162,21 @@ class ReactAgentEnv(vf.ToolEnv):
 
         return tool_messages, state
 
+async def judge_response(prompt: str, completion: list[dict], answer: str, state: dict) -> float:
+    response = completion[-1]['content']
+    client = AsyncOpenAI()
+    judge_prompt = f"""Evaluate the response based on the accuracy of the solution
+    Score should be either 0.0 or 1.0.
+    Response: {response}
+    Answer: {answer}"""
+
+    judge_result = await client.beta.chat.completions.parse(
+        model="gpt-4.1-2025-04-14",
+        messages=[{"role": "user", "content": judge_prompt}],
+        response_format=JudgeResponse
+    )
+    response = judge_result.choices[0].message.parsed
+    return response.score if response else 0.0
 
 def load_environment(**kwargs) -> vf.Environment:
     """
@@ -169,4 +195,14 @@ def load_environment(**kwargs) -> vf.Environment:
     Returns:
         ReactAgentEnv instance
     """
-    return ReactAgentEnv(**kwargs)
+    train_dataset = load_dataset(path="openai/gsm8k", name="main")["train"]
+    eval_dataset = load_dataset(path="openai/gsm8k", name="main")["test"]
+    system_prompt = "You are a helpful research assistant. You are given a question and you need to answer it using the tools provided to you. You need to call the final_answer tool when you have the final answer to the user's question."
+
+    tools =  [final_answer] + kwargs.get("tools", [])
+    tool_rubric = vf.ToolRubric(tools=tools)
+    tool_rubric.reward_weights[1] = 0.2 # first tool is final_answer, so we give it a weight of 0.2
+    rubric_group = vf.RubricGroup(rubrics=[tool_rubric, vf.Rubric(funcs=[judge_response], weights=[1])])
+
+    return ReactAgentEnv(dataset=train_dataset, eval_dataset=eval_dataset, system_prompt=system_prompt, rubric=rubric_group, **kwargs)
+

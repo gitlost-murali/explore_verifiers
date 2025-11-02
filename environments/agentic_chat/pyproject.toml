@@ -17,3 +17,10 @@ build-backend = "hatchling.build"
 [[tool.mypy.overrides]]
 module = "verifiers.*"
 ignore_missing_imports = true
+
+[tool.hatch.build]
+include = ["agentic_chat.py", "pyproject.toml"]
+
+# [tool.verifiers.eval]
+# num_examples = 20
+# rollouts_per_example = 5

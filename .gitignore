@@ -1,3 +1,5 @@
+.env
+environments/*/outputs/evals/
 configs/
 .internal/
 # Python-generated files
