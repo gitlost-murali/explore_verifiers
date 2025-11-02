@@ -1,3 +1,4 @@
+wandb/
 .env
 environments/*/outputs/evals/
 configs/
