@@ -16,6 +16,16 @@ This environment implements the **ReAct pattern** for building agents that:
 
 Think of it as a loop where your agent can use tools like `search`, `calculator`, etc., and when it has enough information, it calls `final_answer(answer="...")` to end the loop.
 
+### Quick Start
+
+```bash
+uv run vf-install agentic_chat
+```
+
+```bash
+uv run vf-eval agentic_chat -m gpt-4.1-2025-04-14
+```
+
 ### Key Features
 
 - ✅ Automatic tool management (pass Python functions, get OpenAI tool format)
