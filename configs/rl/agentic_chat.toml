@@ -1,0 +1,34 @@
+model = "Qwen/Qwen2.5-1.5B-Instruct"
+
+[env]
+id = "agentic_chat"
+
+[inference]
+gpus = 2
+
+[inference.args]
+enforce_eager = true
+tensor_parallel_size = 2
+enable_auto_tool_choice = true
+tool_call_parser = "hermes"
+
+
+[trainer]
+gpus = 2
+tensor_parallel_size = 2
+
+[trainer.args]
+use_lora = true
+lora_target_modules = "all-linear"
+lora_rank = 4
+lora_alpha = 16
+mask_truncated_completions = true
+run_name = "gsm8k-agentic-chat"
+micro_batch_size = 4
+rollouts_per_example = 16
+batch_size = 512
+max_steps = 500
+max_seq_len = 4096
+bf16 = true
+eval_strategy="no"
+eval_steps=50
